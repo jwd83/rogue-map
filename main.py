@@ -4,15 +4,17 @@ import numpy as np
 
 
 def main():
+    max_map_dimension = 20
 
-    block_size = 5
+    block_size = 360 / max_map_dimension / 2
     dead_ends = [1, 2, 4, 8]
 
     level_map = mapmaker.make_floor(
         minimum_rooms=int(input("How many rooms? ")),
         desired_dead_ends=int(input("How many dead ends? (0 for random): ")),
+        size=max_map_dimension,
     )
-    print(level_map)
+    print("Map generated")
 
     pygame.init()
 
@@ -24,6 +26,12 @@ def main():
                 pygame.quit()
                 return
 
+            # check for escape key
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    return
+
         screen.fill((0, 0, 0))
 
         for x in range(level_map.shape[0]):
@@ -32,8 +40,17 @@ def main():
 
                     color = (255, 0, 0)
 
+                    # color dead ends green
                     if level_map[x, y] in dead_ends:
                         color = (0, 255, 0)
+
+                    # color 4 way spokes room purple
+                    if level_map[x, y] & 15 == 15:
+                        color = (255, 0, 255)
+
+                    # color starting room blue
+                    if level_map[x, y] & 16:
+                        color = (0, 0, 255)
 
                     pygame.draw.rect(
                         screen,
