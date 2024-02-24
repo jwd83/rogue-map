@@ -5,6 +5,7 @@ def count_rooms(floor_map: np.ndarray) -> int:
 
     return len(floor_map.nonzero()[0])
 
+
 def count_dead_ends(floor_map: np.ndarray) -> int:
     dead_ends = 0
     for x in range(floor_map.shape[0]):
@@ -20,12 +21,25 @@ def count_dead_ends(floor_map: np.ndarray) -> int:
     return dead_ends
 
 
-def make_floor(desired_rooms=10):
-    # create a 20 x 20 matrix of zeros to hold our floor map
-    size = 20
+# Create a map starting with a 20x20 or user defined size
+# using the "drunken walk" algorithm, create a random path
+# through the map. bits of a room will represent it's connection
+# starting at 12 o;clock and moving clockwise the bits will be
+# as follows: 1 = up, 2 = right, 4 = down, 8 = left
+#
+# Any value with a bit set at all will be considered a room
+# and it's connections will be determined by the bits set.
 
-    x = int(size / 2)
-    y = int(size / 2)
+
+def make_floor(desired_rooms=10, size=20):
+
+    if desired_rooms > size * size:
+        desired_rooms = size * size
+
+    midpoint = int(size / 2)
+
+    x = midpoint
+    y = midpoint
 
     floor_map = np.zeros((size, size), dtype=int)
 
@@ -51,10 +65,58 @@ def make_floor(desired_rooms=10):
             x -= 1
             floor_map[x, y] |= 2
 
-        # print the current stats
+        # # print the current stats
         print("Rooms: ", count_rooms(floor_map))
         print("Dead Ends: ", count_dead_ends(floor_map))
 
+    print(floor_map)
+    print("Desired minimum rooms reached. Adding dead ends.")
+
+    # loop through the map and find 0s next to values that
+    # are not 1,2,4,8 or 8 and create a room adjancent to them
+    # to increase the number of dead ends.
+
+    # avoid the outer edges of the map so we don't look for
+    # values in positions that don't exist
+    avoid = [0, 1, 2, 4, 8]
+    for x in range(1, floor_map.shape[0] - 1):
+        for y in range(1, floor_map.shape[1] - 1):
+            # if we find an empty space
+            if floor_map[x, y] == 0:
+
+                # check the surrounding values
+
+                # check to the left first
+                if floor_map[x - 1, y] not in avoid:
+                    # if there is an existing room that's
+                    # not already a dead end, add a dead end
+                    # to it's right
+                    floor_map[x - 1, y] |= 2
+                    floor_map[x, y] |= 8
+
+                # if not to the left then check above
+                elif floor_map[x, y - 1] not in avoid:
+                    # if there is an existing room that's
+                    # not already a dead end, add a dead end
+                    floor_map[x, y - 1] |= 4
+                    floor_map[x, y] |= 1
+
+                # if not above or to the left then check to the right
+                elif floor_map[x + 1, y] not in avoid:
+                    # if there is an existing room that's
+                    # not already a dead end, add a dead end
+                    floor_map[x + 1, y] |= 8
+                    floor_map[x, y] |= 2
+                # if not any of those then check finally check below
+                elif floor_map[x, y + 1] not in avoid:
+                    # if there is an existing room that's
+                    # not already a dead end, add a dead end
+                    floor_map[x, y + 1] |= 1
+                    floor_map[x, y] |= 4
+
+    print("Final Stats: ")
+    print("Rooms: ", count_rooms(floor_map))
+    print("Dead Ends: ", count_dead_ends(floor_map))
 
     return floor_map
 
