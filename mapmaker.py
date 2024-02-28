@@ -84,12 +84,12 @@ def make_floor(minimum_rooms=10, desired_dead_ends=0, size=20):
     print("Desired minimum rooms reached. Adding dead ends.")
 
     # loop through the map and find 0s next to values that
-    # are not 1,2,4,8 or 8 and create a room adjancent to them
+    # are not 1,2,4 or 8 and create a room adjancent to them
     # to increase the number of dead ends.
+    avoid = [0, 1, 2, 4, 8]
 
     # avoid the outer edges of the map so we don't look for
     # values in positions that don't exist
-    avoid = [0, 1, 2, 4, 8]
     for x in range(1, floor_map.shape[0] - 1):
         for y in range(1, floor_map.shape[1] - 1):
             # if we find an empty space
